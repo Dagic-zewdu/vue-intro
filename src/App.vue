@@ -4,7 +4,7 @@
      <div v-show="showTask">
        <AddForm @addTask="addTask" />
      </div>
-     <Tasks  :tasks="tasks" @delete-task="deleteTask" />
+     <Tasks @handle-reminder="handleReminder"  :tasks="tasks" @delete-task="deleteTask" />
    </div>
 </template>
 
@@ -13,6 +13,7 @@ import Header from "./components/Header"
 import {generate} from "randomized-string"
 import Tasks from "./components/Tasks.vue"
 import AddForm from './components/addForm.vue'
+import {getTasks,addTask as addTaskAsync, updateTask,deleteTask as deleteTaskAsync} from "./api/backend.tasks"
 export default {
  name: 'App',
   components:{
@@ -26,36 +27,26 @@ export default {
       showTask:true
     }
   },
-  created(){
-    this.tasks=[{
-      id:generate({charset:"number",length:4}),
-      text:"Do some yoga",
-      reminder:true,
-      day: "March 21 2022"
-    },
-    {
-      id:generate({charset:"number",length:4}),
-      text:"Learn vue.js",
-      reminder:true,
-      day: "Apr 22 2022"
-    },
-    {
-      id:generate({charset:"number",length:4}),
-      text:"Eat some thing",
-      reminder:false,
-      day: "Sep 1 2021"
-    }
-    ]
+  async created(){
+    this.tasks=await getTasks()
   },
   methods:{
     showForm(){
       this.showTask=(!this.showTask)
     },
-    addTask(task){
-      this.tasks=[...this.tasks,task]
+    async addTask(task){
+      let req=await addTaskAsync(task)
+      this.tasks=[...this.tasks,req]
     },
-    deleteTask(id){
-   this.tasks=this.tasks.filter(task=> task.id !== id)
+    async deleteTask(id){
+    let req=await deleteTaskAsync(id)
+    this.tasks=await getTasks()
+    },
+    async handleReminder(id){
+      let task=this.tasks.find(task=> task.id === id)
+     let update=await updateTask({...task,reminder:!task.reminder})
+     let tasks=this.tasks.filter(task=> task.id !== id)
+     this.tasks=[...tasks,update]
     }
   }
 }

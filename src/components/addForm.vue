@@ -43,6 +43,9 @@ import { generate } from 'randomized-string';
                   reminder:this.reminder
               }
               this.$emit("addTask",task)
+              this.text=''
+              this.day='',
+              this.reminder=false
           }
        }
     }
